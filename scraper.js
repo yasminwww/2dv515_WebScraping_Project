@@ -9,7 +9,7 @@ const testURL = 'https://en.wikipedia.org'
 
 
 
-const getRawHTML = async () => {
+const getRawHTMLBody = async () => {
     const options = {
             uri: initialURL,
             transform: (body) => {
@@ -18,8 +18,6 @@ const getRawHTML = async () => {
     }
     try {
         const $ = await rp(options)
-        extractLinks($)
-        // scrapeRawHTMLFromEachLink($)
         return $
     }
     catch (err) {
@@ -28,7 +26,7 @@ const getRawHTML = async () => {
 }
 
 
-const extractLinks = ($) => {
+const extractLinks = async ($) => {
     const setOfLinks = new Set()
     const content = $('#mw-content-text')
     const linksFoundOnPage = content.find('a')
@@ -46,7 +44,7 @@ const extractLinks = ($) => {
 
 
 // FUN: Randomize 200 ?
-const scrapeRawHTMLFromEachLink = async (setOfLinks) => {
+const scrapeRawHTMLFromEachLink = async (setOfLinks, isHTML) => {
     let htmls = ''
     let count = 0
     setOfLinks.forEach(async (fragment) => {
@@ -58,13 +56,24 @@ const scrapeRawHTMLFromEachLink = async (setOfLinks) => {
                 }
             }
             const $ = await rp(options)
-            htmls = $('#mw-content-text').html()
+
+            if(isHTML) {
+                htmls = $('#mw-content-text').html()
+                await fs.writeFile(`rawHTML${count++}.html`, htmls)
+            }
+
         } catch (err) {
             console.log('ScrapeRawHTMLFROMEACH', err.message)
         }
-        await fs.writeFile(`rawHTML${count++}.html`, htmls)
 
     })
 }
 
-getRawHTML()
+
+const startScrape = async () => {
+    let body = await getRawHTMLBody()
+    let setOfLinks = await extractLinks(body)
+    await scrapeRawHTMLFromEachLink(setOfLinks, true)
+}
+
+startScrape()
