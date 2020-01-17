@@ -1,19 +1,35 @@
-'use strict'
+
+/** 
+ *  E
+        Scrape and store raw HTML for at least 200 pages   - V
+*  C-D	
+        Parse the raw HTML files to generate a dataset similar to the Wikipedia dataset from Assignment 3   - V
+        For each article, the dataset shall contain a file with all words in the article and another file with all outgoing links in the article
+*  A-B	
+        Use the dataset with your search engine from Assignment 3
+        Use both content-based ranking and PageRank to rank search results
+ 
+ */
 
 const cheerio = require('cheerio')
 const rp = require('request-promise')
 const fs = require('fs').promises
 
-const testQuery = '/wiki/McMaken'
+const testQuery = '/wiki/Art'
 const testURL = 'https://en.wikipedia.org'
 
+// TODO TODAY:
 
+// 1. Write LinkInception to file !
+// 2. Trim the SPACES !
+// 3. Fix client, search-field
+// 
 
 const dynamicSearchQuery = (testQuery) => {
     return {
         uri: `${testURL}${testQuery}`,
-        transform: async (body) => {
-            return await cheerio.load(body)
+        transform: (body) => {
+            return cheerio.load(body)
         }
     }
 }
@@ -31,13 +47,13 @@ const getRawHTMLBody = async (testQuery) => {
 }
 
 
-const extractLinks = async ($) => {
+const extractLinks = ($) => {
     const setOfLinks = new Set()
     const content = $('#mw-content-text')
     const linksFoundOnPage = content.find('a')
     
     $(linksFoundOnPage).each((i, element) => {
-        if(setOfLinks.size <= 3) {
+        if(setOfLinks.size <= 200) {
             let link = $(element).attr('href')
             if(link !== undefined && link.includes('/wiki/') && !link.includes(':')) {
                 setOfLinks.add(link)
@@ -55,7 +71,7 @@ const scrapeRawContentFromEachLink = async (setOfLinks, isHTML) => {
     setOfLinks.forEach(async (query) => {
         try {
             const options = dynamicSearchQuery(query)
-            const $ = await rp(options)
+            const $ =   await rp(options)
 
             if(isHTML) {
                 htmls = $('#mw-content-text').html()
@@ -75,10 +91,9 @@ const startScrape = async (searchQuery) => {
     // TODO: skicka med strängar till wiki Searchquery
     try {
         console.log(searchQuery)
-        let body = await getRawHTMLBody(searchQuery)
-
-        let setOfLinks = await extractLinks(body)
-        let nextlink = await otherFunction(setOfLinks)
+        let body =          await getRawHTMLBody(searchQuery)
+        let setOfLinks =    await extractLinks(body)
+                            await getLinksWithinLinks(setOfLinks)
 
         // // await fs.writeFile(`r${count++}.txt`, againLinks)
         // await scrapeRawContentFromEachLink(setOfLinks, true)
@@ -90,7 +105,7 @@ const startScrape = async (searchQuery) => {
 startScrape(testQuery)
 
 
-const otherFunction = async (setOfLinksInLinks) => {
+const getLinksWithinLinks = async (setOfLinksInLinks) => {
     try {
         console.log(setOfLinksInLinks)
         
@@ -98,19 +113,18 @@ const otherFunction = async (setOfLinksInLinks) => {
         setOfLinksInLinks.forEach(async (query) => {
             console.log
             let body = await getRawHTMLBody(query)
-    
             let againLinks = await extractLinks(body)
             console.log(againLinks)
         })
         console.log(arr)
         return arr
     } catch (error) {
-        console.log('OTHERRRRRRRRRRRRRRRRRRRRRR', error.message)
+        console.log('LinkInception', error.message)
     }
 }
 
 
 exports.getRawHTMLBody = getRawHTMLBody
 exports.extractLinks = extractLinks
-exports.scrapeRawContentFromEachLink = scrapeRawContentFromEachLink
 exports.startScrape = startScrape
+exports.scrapeRawContentFromEachLink = scrapeRawContentFromEachLink
