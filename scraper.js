@@ -36,9 +36,9 @@ const dynamicSearchQuery = (testQuery) => {
 
 const getRawHTMLBody = async (testQuery) => {
     console.log(testQuery)
-    const options = await dynamicSearchQuery(testQuery)
+    const options =     await dynamicSearchQuery(testQuery)
     try {
-        const $ = await rp(options)
+        const $ =       await rp(options)
         return $
     }
     catch (err) {
@@ -111,9 +111,8 @@ const getLinksWithinLinks = async (setOfLinksInLinks) => {
         
         const arr = []
         setOfLinksInLinks.forEach(async (query) => {
-            console.log
-            let body = await getRawHTMLBody(query)
-            let againLinks = await extractLinks(body)
+            let body =          await getRawHTMLBody(query)
+            let againLinks =    await extractLinks(body)
             console.log(againLinks)
         })
         console.log(arr)
