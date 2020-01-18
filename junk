@@ -1,0 +1,20 @@
+const scrapeRawContentFromEachLink = async (setOfLinks, isHTML) => {
+    let htmls = ''
+    let count = 0
+    setOfLinks.forEach(async (query) => {
+        try {
+            const options = dynamicSearchQuery(query)
+            const $ =   await rp(options)
+
+            if(isHTML) {
+                htmls = $('#mw-content-text').html()
+                await fs.writeFile(`rawHTML${count++}.html`, htmls)
+            }
+                htmls = $('#mw-content-text').text()
+                await fs.writeFile(`rawTEXT${count++}.txt`, htmls)
+        } catch (err) {
+            console.log('ScrapeRawHTMLFROMEACH', err.message)
+        }
+    })
+}
+

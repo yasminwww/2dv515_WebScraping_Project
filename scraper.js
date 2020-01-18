@@ -31,12 +31,10 @@ const dynamicSearchQuery = (testQuery) => {
 }
 
 
-
-const getRawHTMLBody = async (testQuery) => {
+const requestHTMLBody = async (testQuery) => {
     const options =     await dynamicSearchQuery(testQuery)
     try {
-        const $ =       await rp(options)
-        return $
+        return await rp(options)
     }
     catch (err) {
         console.log('getRawHTML', err.message)
@@ -63,53 +61,29 @@ const extractLinks = ($) => {
 
 
 
-const scrapeRawContentFromEachLink = async (setOfLinks, isHTML) => {
-    let htmls = ''
-    let count = 0
-    setOfLinks.forEach(async (query) => {
-        try {
-            const options = dynamicSearchQuery(query)
-            const $ =   await rp(options)
-
-            if(isHTML) {
-                htmls = $('#mw-content-text').html()
-                await fs.writeFile(`rawHTML${count++}.html`, htmls)
-            }
-                htmls = $('#mw-content-text').text()
-                await fs.writeFile(`rawTEXT${count++}.txt`, htmls)
-        } catch (err) {
-            console.log('ScrapeRawHTMLFROMEACH', err.message)
-        }
-    })
-}
-
-
-
-const startScrape = async (searchQuery) => {
+const startScraping = async (searchQuery) => {
     try {
-        let body =          await getRawHTMLBody(searchQuery)
+        let body =          await requestHTMLBody(searchQuery)
         let setOfLinks =    await extractLinks(body)
 
         setOfLinks.forEach(async (query, i) => {
             let modifiedQuery =     await query.substring(6, query.length)
-            let body =              await getRawHTMLBody(query)
+            let body =              await requestHTMLBody(query)
             let cleanContent =      body.text().replace(/[^0-9a-z-A-Z ]/g, '')
             let linksInsideLinks =  await extractLinks(body)
 
             await fs.writeFile(`./files/Links/${modifiedQuery}.txt`, linksInsideLinks.join(', \n'))
             await fs.writeFile(`./files/Content/${modifiedQuery}.txt`, cleanContent)
         })
-        // await scrapeRawContentFromEachLink(setOfLinks, true)
 
     } catch(err) {
         console.log('startScraper: ', err.message)
     }
 }
 
-startScrape(testQuery)
+startScraping(testQuery)
 
 
-exports.getRawHTMLBody = getRawHTMLBody
+exports.getRawHTMLBody = requestHTMLBody
 exports.extractLinks = extractLinks
-exports.startScrape = startScrape
-exports.scrapeRawContentFromEachLink = scrapeRawContentFromEachLink
+exports.startScraping = startScraping

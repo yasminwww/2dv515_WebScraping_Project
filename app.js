@@ -1,12 +1,12 @@
 const express = require('express')
-const {startScrape} = require('./scraper.js')
+const {startScraping: startScraping} = require('./scraper.js')
 
 const app = express()
 
 app.get('/:query', async (req, res) => {
     const searchQuery = req.params.query
 
-    const result = await startScrape(searchQuery)
+    const result = await startScraping(searchQuery)
     res.send(result)
   })
 
