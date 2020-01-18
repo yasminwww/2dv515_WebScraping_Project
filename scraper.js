@@ -1,3 +1,12 @@
+const cheerio = require('cheerio')
+const rp = require('request-promise')
+const fs = require('fs').promises
+
+const testURL = 'https://en.wikipedia.org'
+const testQuery = '/wiki/Programming'
+
+const numberOfLinks = 200
+
 
 /** 
  *  E
@@ -11,21 +20,6 @@
  
  */
 
-const cheerio = require('cheerio')
-const rp = require('request-promise')
-const fs = require('fs').promises
-
-const testURL = 'https://en.wikipedia.org'
-const testQuery = '/wiki/Programming'
-
-const numberOfLinks = 200
-
-// TODO TODAY:
-
-// 1. Write LinkInception to file !
-// 2. Trim the SPACES !
-// 3. Fix client, search-field
-// 
 
 const dynamicSearchQuery = (testQuery) => {
     return {
@@ -39,7 +33,6 @@ const dynamicSearchQuery = (testQuery) => {
 
 
 const getRawHTMLBody = async (testQuery) => {
-    // console.log(testQuery)
     const options =     await dynamicSearchQuery(testQuery)
     try {
         const $ =       await rp(options)
@@ -51,17 +44,15 @@ const getRawHTMLBody = async (testQuery) => {
 }
 
 
+
 const extractLinks = ($) => {
     const setOfLinks = new Set()
-    // const content = $('#mw-content-text')
-    const content = $('.mw-parser-output')
-    
+    const content = $('#mw-content-text')
     const linksFoundOnPage = content.find('a')
 
     $(linksFoundOnPage).each((i, element) => {
         if(setOfLinks.size <= numberOfLinks) {
             let link = $(element).attr('href')
-
             if(link !== undefined && link.includes('/wiki/') && !link.includes(':')) {
                 setOfLinks.add(link)
             }
@@ -100,20 +91,14 @@ const startScrape = async (searchQuery) => {
         let setOfLinks =    await extractLinks(body)
 
         setOfLinks.forEach(async (query, i) => {
-            let modifiedQuery =    await query.substring(6, query.length)
-            let body =      await getRawHTMLBody(query)
-
-            let cleanContent = body.text().replace(/[^0-9a-z-A-Z ]/g, '')
-            // .replace(/\s{2,}/g, ' ')
-
-            let againLinks =    await extractLinks(body)
+            let modifiedQuery =     await query.substring(6, query.length)
+            let body =              await getRawHTMLBody(query)
+            let cleanContent =      body.text().replace(/[^0-9a-z-A-Z ]/g, '')
+            let againLinks =        await extractLinks(body)
 
             await fs.writeFile(`./files/Links/${modifiedQuery}.txt`, againLinks.join(', \n'))
             await fs.writeFile(`./files/Content/${modifiedQuery}.txt`, cleanContent)
         })
-
-
-        // await fs.writeFile(`r${count++}.txt`, againLinks)
         // await scrapeRawContentFromEachLink(setOfLinks, true)
 
     } catch(err) {
@@ -122,7 +107,6 @@ const startScrape = async (searchQuery) => {
 }
 
 startScrape(testQuery)
-
 
 
 exports.getRawHTMLBody = getRawHTMLBody
