@@ -94,9 +94,9 @@ const startScrape = async (searchQuery) => {
             let modifiedQuery =     await query.substring(6, query.length)
             let body =              await getRawHTMLBody(query)
             let cleanContent =      body.text().replace(/[^0-9a-z-A-Z ]/g, '')
-            let againLinks =        await extractLinks(body)
+            let linksInsideLinks =  await extractLinks(body)
 
-            await fs.writeFile(`./files/Links/${modifiedQuery}.txt`, againLinks.join(', \n'))
+            await fs.writeFile(`./files/Links/${modifiedQuery}.txt`, linksInsideLinks.join(', \n'))
             await fs.writeFile(`./files/Content/${modifiedQuery}.txt`, cleanContent)
         })
         // await scrapeRawContentFromEachLink(setOfLinks, true)
