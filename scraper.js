@@ -3,7 +3,7 @@ const rp = require('request-promise')
 const fs = require('fs').promises
 
 const testURL = 'https://en.wikipedia.org'
-const testQuery = '/wiki/Programming'
+const testQuery = '/wiki/Art'
 
 const numberOfLinks = 200
 
